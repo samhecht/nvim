@@ -2,6 +2,8 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+vim.cmd([[colorscheme default]])
+
 local lazypath = vim.fn.stdpath'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
 	vim.fn.system {
@@ -19,7 +21,7 @@ require('lazy').setup({
 	'tpope/vim-fugitive',
 	'tpope/vim-rhubarb',
 	'tpope/vim-sleuth',
-		{
+	{
 		'neovim/nvim-lspconfig',
 		dependencies = {
 			{ 'williamboman/mason.nvim', config = true },
@@ -48,7 +50,7 @@ require('lazy').setup({
 				change = { text = '~' },
 				delete = { text = '_' },
 				topdelete = { text = '‾' },
-				changedelete = { text = '~' },
+			changedelete = { text = '~' },
 			},
 			on_attach = function(bufnr)
 				vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk, { buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
@@ -58,22 +60,10 @@ require('lazy').setup({
 		},
 	},
 	{
-		-- Theme inspired by Atom
-    -- 'navarasu/onedark.nvim',
-    'marko-cerovac/material.nvim',
-		priority = 1000,
-		config = function()
-			vim.cmd.colorscheme 'material-palenight'
-		end,
-	},
-  {
-  },
-	{
 		'nvim-lualine/lualine.nvim',
 		opts = {
 			options = {
 				icons_enabled = false,
-				theme = 'material-stealth',
 				component_separators = '|',
 				section_separators = '',
 			},
@@ -119,8 +109,10 @@ require('lazy').setup({
 		},
 		build = ':TSUpdate',
 	},
-  { import = 'custom.plugins' },
-}, {})
+	{ import = 'custom.plugins' },
+}, {
+	git = {url_format = 'git@github.com:%s.git'}
+})
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -161,7 +153,7 @@ vim.o.timeoutlen = 300
 vim.o.completeopt = 'menuone,noselect'
 
 -- NOTE: You should make sure your terminal supports this
-vim.o.termguicolors = true
+-- vim.o.termguicolors = true
 
 -- [[ Basic Keymaps ]]
 
@@ -208,6 +200,7 @@ vim.keymap.set('n', '<leader>/', function()
 	require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
 		winblend = 10,
 		previewer = false,
+		theme = "default",
 	})
 end, { desc = '[/] Fuzzily search in current buffer' })
 
@@ -223,7 +216,7 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
 	-- Add languages to be installed here that you want installed for treesitter
-	ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+	ensure_installed = { 'c', 'cpp', 'go', 'lua', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
 
 	-- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
 	auto_install = false,
@@ -328,12 +321,12 @@ local on_attach = function(_, bufnr)
 	nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
 	nmap('<leader>wl', function()
 		print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-	end, '[W]orkspace [L]ist Folders')
+		end, '[W]orkspace [L]ist Folders')
 
 	-- Create a command `:Format` local to the LSP buffer
 	vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
 		vim.lsp.buf.format()
-	end, { desc = 'Format current buffer with LSP' })
+		end, { desc = 'Format current buffer with LSP' })
 end
 
 -- Enable the following language servers
@@ -345,13 +338,6 @@ end
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
 local servers = {
-	-- clangd = {},
-	-- gopls = {},
-	-- pyright = {},
-	-- rust_analyzer = {},
-	-- tsserver = {},
-	-- html = { filetypes = { 'html', 'twig', 'hbs'} },
-
 	lua_ls = {
 		Lua = {
 			workspace = { checkThirdParty = false },
@@ -365,7 +351,7 @@ vim.cmd([[source ~/.vimrc]])
 require('neodev').setup()
 
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
-local capabilities = vim.lsp.protocol.make_client_capabilities('python', 'ocaml', 'lua','elm')
+local capabilities = vim.lsp.protocol.make_client_capabilities('python', 'ocaml', 'lua','elm', 'typescript', 'rescript', 'html', 'cpp', 'clojure', "reason")
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
 -- Ensure the servers above are installed
@@ -395,110 +381,110 @@ local luasnip = require("luasnip")
 local lsp = require("lspconfig")
 
 local has_words_before = function()
-    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+	local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+	return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
 end
 
 local cmp_kinds = {
-    Text = "[]",
-    Method = "",
-    Function = "",
-    Constructor = "",
-    Field = "",
-    Variable = "",
-    Class = "ﴯ",
-    Interface = "",
-    Module = "",
-    Property = "ﰠ",
-    Unit = "",
-    Value = "λ",
-    Enum = "",
-    Keyword = "",
-    Snippet = "",
-    Color = "",
-    File = "",
-    Reference = "",
-    Folder = "",
-    EnumMember = "",
-    Constant = "",
-    Struct = "",
-    Event = "",
-    Operator = "",
-    TypeParameter = ""
+	Text = "[]",
+	Method = "",
+	Function = "",
+	Constructor = "",
+	Field = "",
+	Variable = "",
+	Class = "ﴯ",
+	Interface = "",
+	Module = "",
+	Property = "ﰠ",
+	Unit = "",
+	Value = "λ",
+	Enum = "",
+	Keyword = "",
+	Snippet = "",
+	Color = "",
+	File = "",
+	Reference = "",
+	Folder = "",
+	EnumMember = "",
+	Constant = "",
+	Struct = "",
+	Event = "",
+	Operator = "",
+	TypeParameter = ""
 }
 
 cmp.setup({
-    snippet = {
-        expand = function(args)
-            luasnip.lsp_expand(args.body)
-        end,
-    },
-    window = {
-        completion = {
-            winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
-        },
-        documentation = {
-            border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
-        },
-    },
-    mapping = cmp.mapping.preset.insert({
-        ["<C-k>"] = cmp.mapping.scroll_docs(-4),
-        ["<C-j>"] = cmp.mapping.scroll_docs(4),
-        ["<C-e>"] = cmp.mapping.abort(),
-        ["<CR>"] = cmp.mapping.confirm({
-            behavior = cmp.ConfirmBehavior.Replace,
-            select = true
-        }),
-        ["<Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
-                luasnip.expand_or_jump()
-            elseif has_words_before() then
-                cmp.complete()
-            else
-                fallback()
-            end
-        end, { "i", "s" }),
-        ["<S-Tab>"] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-                luasnip.jump(-1)
-            else
-                fallback()
-            end
-        end, { "i", "s" }),
-    }),
-    sources = cmp.config.sources({
-        { name = "nvim_lsp" },
-        { name = "luasnip" },
-        { name = "buffer" },
-        option = {
-            get_bufnrs = function()
-                local bufs = {}
-                for _, win in ipairs(vim.api.nvim_list_wins()) do
-                    bufs[vim.api.nvim_win_get_buf(win)] = true
-                end
-                return vim.tbl_keys(bufs)
-            end
-        }
-    }),
-    formatting = {
-        fields = { "kind", "abbr", "menu" },
-        format = function(entry, vim_item)
-            vim_item.kind = cmp_kinds[vim_item.kind] or ""
-            local lsp_icon = "🅻"
-            if lsp ~= nil and lsp.ocamllsp ~= nil then
-                lsp_icon = "🐫"
-            end
-            vim_item.menu = ({
-                buffer = "🅱",
-                nvim_lsp = lsp_icon,
-                luasnip = "㊊"
-            })[entry.source.name]
-            return vim_item
-        end,
-    }
+	snippet = {
+		expand = function(args)
+			luasnip.lsp_expand(args.body)
+		end,
+	},
+	window = {
+		completion = {
+			winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+		},
+		documentation = {
+			border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+		},
+	},
+	mapping = cmp.mapping.preset.insert({
+		["<C-k>"] = cmp.mapping.scroll_docs(-4),
+		["<C-j>"] = cmp.mapping.scroll_docs(4),
+		["<C-e>"] = cmp.mapping.abort(),
+		["<CR>"] = cmp.mapping.confirm({
+			behavior = cmp.ConfirmBehavior.Replace,
+			select = true
+		}),
+		["<Tab>"] = cmp.mapping(function(fallback)
+			if cmp.visible() then
+				cmp.select_next_item()
+			elseif luasnip.expand_or_jumpable() then
+				luasnip.expand_or_jump()
+			elseif has_words_before() then
+				cmp.complete()
+			else
+				fallback()
+			end
+		end, { "i", "s" }),
+		["<S-Tab>"] = cmp.mapping(function(fallback)
+			if cmp.visible() then
+				cmp.select_prev_item()
+			elseif luasnip.jumpable(-1) then
+				luasnip.jump(-1)
+			else
+				fallback()
+			end
+		end, { "i", "s" }),
+	}),
+	sources = cmp.config.sources({
+		{ name = "nvim_lsp" },
+		{ name = "luasnip" },
+		{ name = "buffer" },
+		option = {
+			get_bufnrs = function()
+				local bufs = {}
+				for _, win in ipairs(vim.api.nvim_list_wins()) do
+					bufs[vim.api.nvim_win_get_buf(win)] = true
+				end
+				return vim.tbl_keys(bufs)
+			end
+		}
+	}),
+	formatting = {
+		fields = { "kind", "abbr", "menu" },
+		format = function(entry, vim_item)
+			vim_item.kind = cmp_kinds[vim_item.kind] or ""
+			local lsp_icon = "🅻"
+			if lsp ~= nil and lsp.ocamllsp ~= nil then
+				lsp_icon = "🐫"
+			end
+			vim_item.menu = ({
+				buffer = "🅱",
+				nvim_lsp = lsp_icon,
+				luasnip = "㊊"
+			})[entry.source.name]
+			return vim_item
+		end,
+	}
 })
 
