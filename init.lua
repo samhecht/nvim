@@ -102,7 +102,7 @@ vim.g.moonlight_disable_background = false
 require('moonlight').set()
 
 vim.o.hlsearch = false
-vim.wo.number = false
+vim.wo.number = true
 vim.o.mouse = 'a'
 vim.o.breakindent = true
 vim.o.undofile = true
