@@ -130,10 +130,18 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 require('lualine').setup {
         options = {
                 icons_enabled = true,
-                component_separators = '|',
+                component_separators = '✧',
                 section_separators = '',
                 theme = 'moonlight',
         },
+        sections = {
+                lualine_a = {'mode'},
+                lualine_b = {'branch', 'diff', 'diagnostics'},
+                lualine_c = {'filename'},
+                lualine_x = {'encoding', 'filetype'},
+                lualine_y = {'progress'},
+                lualine_z = {'location'}
+      },
 }
 
 require('telescope').setup {
@@ -170,11 +178,9 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 
 ---@diagnostic disable-next-line missing-fields
 require('nvim-treesitter.configs').setup {
-        -- Add languages to be installed here that you want installed for treesitter
-        ensure_installed = { 'c', 'cpp', 'go', 'lua', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+        ensure_installed = { 'c', 'cpp', 'go', 'lua', 'rust', 'tsx', 'typescript', 'ocaml', 'haskell', 'clojure', 'vimdoc', 'vim' },
 
-        -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-        auto_install = false,
+        auto_install = true,
 
         highlight = { enable = true },
         indent = { enable = true },
@@ -271,14 +277,6 @@ local on_attach = function(_, bufnr)
         end, { desc = 'Format current buffer with LSP' })
 end
 
--- Enable the following language servers
---  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
---
---  Add any additional override configuration in the following tables. They will be passed to
---  the `settings` field of the server config. You must look up that documentation yourself.
---
---  If you want to override the default filetypes that your language server will attach to you can
---  define the property 'filetypes' to the map in question.
 local servers = {
         lua_ls = {
                 Lua = {
@@ -288,7 +286,6 @@ local servers = {
         },
 }
 
--- Setup neovim lua configuration
 require('neodev').setup()
 
 local supported_lsp_langs = {
