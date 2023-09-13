@@ -1,4 +1,5 @@
 return {
+  'echasnovski/mini.statusline',
   'shaunsingh/moonlight.nvim',
   'norcalli/nvim-colorizer.lua',
   'tpope/vim-fugitive',

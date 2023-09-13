@@ -80,7 +80,7 @@ require('lazy').setup({
 }, {
 	git = { url_format = 'git@github.com:%s.git' }
 })
-
+vim.g.icons_enabled = 1
 vim.g.moonlight_italic_comments = true
 vim.g.moonlight_italic_keywords = true
 vim.g.moonlight_italic_functions = true
@@ -90,7 +90,6 @@ vim.g.moonlight_borders = false
 vim.g.moonlight_disable_background = false
 
 require('moonlight').set()
-require('colorizer').setup()
 
 vim.o.hlsearch = false
 vim.wo.number = true
@@ -109,12 +108,6 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', 'v:count == 0 ? \'gk\' : \'k\'', { expr = true, silent = true }) ---@diagnostic disable-line redundant-parameters
 vim.keymap.set('n', 'j', 'v:count == 0 ? \'gj\' : \'j\'', { expr = true, silent = true })
 
-require('nvim-tree').setup {
-	git = {
-		ignore = false,
-	},
-}
-
 local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
 vim.api.nvim_create_autocmd('TextYankPost', {
 	callback = function()
@@ -123,23 +116,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 	group = highlight_group,
 	pattern = '*',
 })
-
--- require('lualine').setup {
---	options = {
---		icons_enabled = true,
---		component_separators = '✧',
---		section_separators = '',
---		theme = 'moonlight',
---	},
---	sections = {
---		lualine_a = { 'mode' },
---		lualine_b = { 'branch', 'diff', 'diagnostics' },
---		lualine_c = { 'filename' },
---		lualine_x = { 'encoding', 'filetype' },
---		lualine_y = { 'progress' },
---		lualine_z = { 'location' }
---	},
--- }
 
 require('telescope').setup {
 	defaults = {
@@ -172,7 +148,36 @@ vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { de
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
 
+require('mini.statusline').setup {
+	content = {
+		active = function()
+			local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 120 })
+			local git           = MiniStatusline.section_git({ trunc_width = 75 })
+			local diagnostics   = MiniStatusline.section_diagnostics({ trunc_width = 75 })
+			local filename      = MiniStatusline.section_filename({ trunc_width = 140 })
+			local fileinfo      = MiniStatusline.section_fileinfo({ trunc_width = 120 })
+			local location      = MiniStatusline.section_location({ trunc_width = 75 })
 
+			return MiniStatusline.combine_groups({
+				{ hl = mode_hl,                 strings = { mode } },
+				{ hl = 'MiniStatuslineDevinfo', strings = { git, diagnostics } },
+				'%<', -- Mark general truncate point
+				{ hl = 'MiniStatuslineFilename', strings = { filename } },
+				'%=', -- End left alignment
+				{ hl = 'MiniStatuslineFileinfo', strings = { fileinfo } },
+				{ hl = mode_hl,                  strings = { location } },
+			})
+		end,
+	},
+	use_icons = true,
+	icon_styles = {
+		git = 'default',
+		diagnostics = 'default',
+		filename = 'default',
+		fileinfo = 'default',
+		location = 'default'
+	},
+}
 ---@diagnostic disable-next-line missing-fields
 require('nvim-treesitter.configs').setup {
 	ensure_installed = { 'c', 'cpp', 'go', 'lua', 'rust', 'tsx', 'typescript', 'ocaml', 'haskell', 'clojure',
@@ -319,8 +324,6 @@ mason_lspconfig.setup_handlers {
 	end
 }
 
-
-
 vim.cmd([[
 " ## added by OPAM user-setup
 let s:opam_share_dir = system("opam config var share")
@@ -372,6 +375,14 @@ let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
 						:nnoremap <A-l> <C-w>l
 						]])
 
-						vim.cmd([[ let g:slime_target = "kitty" ]])
-						vim.cmd([[ filetype plugin on ]])
-						vim.cmd([[ set omnifunc=syntaxcomplete#Complete ]])
+						vim.cmd([[
+						let g:slime_target = "kitty"
+						]])
+
+						vim.cmd([[
+						filetype plugin on
+						]])
+
+						vim.cmd([[
+						set omnifunc=syntaxcomplete#Complete
+						]])
