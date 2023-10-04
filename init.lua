@@ -9,6 +9,7 @@ vim.opt.termguicolors = true
 
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
+vim.g.number = true
 
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
@@ -46,11 +47,11 @@ require('lazy').setup({
 			},
 			on_attach = function(bufnr)
 				vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk,
-				{ buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
+					{ buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
 				vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk,
-				{ buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
+					{ buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
 				vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk,
-				{ buffer = bufnr, desc = '[P]review [H]unk' })
+					{ buffer = bufnr, desc = '[P]review [H]unk' })
 			end,
 		},
 	},
@@ -76,14 +77,86 @@ require('lazy').setup({
 		},
 		build = ':TSUpdate',
 	},
+	{
+		"simrat39/symbols-outline.nvim",
+		cmd = "SymbolsOutline",
+		init = function()
+			vim.keymap.set(
+				"n",
+				"<leader>lo",
+				":SymbolsOutline<cr>",
+				{ desc = "Symbols Outline" }
+			)
+		end,
+		opts = {
+			keymaps = {
+				focus_location = "<tab>",
+			},
+		},
+	},
+
 	{ import = 'custom.plugins' },
 }, {
-	git = { url_format = 'git@github.com:%s.git' }
+	git = { url_format = 'git@github.com:%s.git' },
+	-- performance = { reset_packpath = false, }, -- this was for tangerine
 })
-vim.g.icons_enabled = 1
+
+require('nvim-devdocs').setup()
+
+--- Fennel and Tangerine Config ---
+-- pick your plugin manager
+-- local pack = "lazy"
+--
+-- local function bootstrap(url, ref)
+-- 	local name = url:gsub(".*/", "")
+-- 	local path
+--
+-- 	if pack == "lazy" then
+-- 		path = vim.fn.stdpath("data") .. "/lazy/" .. name
+-- 		vim.opt.rtp:prepend(path)
+-- 	else
+-- 		path = vim.fn.stdpath("data") .. "/site/pack/" .. pack .. "/start/" .. name
+-- 	end
+--
+-- 	if vim.fn.isdirectory(path) == 0 then
+-- 		print(name .. ": installing in data dir...")
+--
+-- 		vim.fn.system { "git", "clone", url, path }
+-- 		if ref then
+-- 			vim.fn.system { "git", "-C", path, "checkout", ref }
+-- 		end
+--
+-- 		vim.cmd "redraw"
+-- 		print(name .. ": finished installing")
+-- 	end
+-- end
+--
+-- -- for stable version [recommended]
+-- bootstrap("git@github.com:udayvir-singh/tangerine.nvim.git", "v2.8")
+-- require "tangerine".setup {
+-- 	-- save fnl output in a separate dir, it gets automatically added to package.path
+-- 	target = vim.fn.stdpath [[data]] .. "/tangerine",
+--
+-- 	-- compile files in &rtp
+-- 	rtpdirs = {
+-- 		"plugin",
+-- 		"colors",
+-- 		"$HOME/mydir" -- absolute paths are also supported
+-- 	},
+--
+-- 	compiler = {
+-- 		-- disable popup showing compiled files
+-- 		verbose = false,
+--
+-- 		-- compile every time you change fennel files or on entering vim
+-- 		hooks = { "onsave", "oninit" }
+-- 	}
+-- }
+--- End Fennel and Tangerine Config ---
+
 vim.g.moonlight_italic_comments = true
 vim.g.moonlight_italic_keywords = true
-vim.g.moonlight_italic_functions = true
+vim.g.moonlight_italic_functions = false
 vim.g.moonlight_italic_variables = false
 vim.g.moonlight_contrast = true
 vim.g.moonlight_borders = false
@@ -107,6 +180,7 @@ vim.o.termguicolors = true
 vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', 'v:count == 0 ? \'gk\' : \'k\'', { expr = true, silent = true }) ---@diagnostic disable-line redundant-parameters
 vim.keymap.set('n', 'j', 'v:count == 0 ? \'gj\' : \'j\'', { expr = true, silent = true })
+
 
 local highlight_group = vim.api.nvim_create_augroup('YankHighlight', { clear = true })
 vim.api.nvim_create_autocmd('TextYankPost', {
@@ -180,8 +254,8 @@ require('mini.statusline').setup {
 }
 ---@diagnostic disable-next-line missing-fields
 require('nvim-treesitter.configs').setup {
-	ensure_installed = { 'c', 'cpp', 'go', 'lua', 'rust', 'tsx', 'typescript', 'ocaml', 'haskell', 'clojure',
-	'vimdoc', 'vim' },
+	ensure_installed = { 'c', 'cpp', 'go', 'lua', 'rust', 'tsx', 'typescript', 'ocaml', 'haskell', 'clojure', 'fennel',
+		'vimdoc', 'vim', 'html' },
 
 	auto_install = true,
 
@@ -301,6 +375,7 @@ local supported_lsp_langs = {
 	'html',
 	'cpp',
 	'clojure',
+	'fennel',
 	'reason',
 }
 
@@ -336,53 +411,50 @@ execute "set rtp^=" . s:opam_share_dir . "/ocp-indent/vim"
 endfunction
 let s:opam_configuration['ocp-indent'] = function('OpamConfOcpIndent')
 
-	function! OpamConfOcpIndex()
-	execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
-	endfunction
-	let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
+function! OpamConfOcpIndex()
+execute "set rtp+=" . s:opam_share_dir . "/ocp-index/vim"
+endfunction
+let s:opam_configuration['ocp-index'] = function('OpamConfOcpIndex')
 
-		function! OpamConfMerlin()
-		let l:dir = s:opam_share_dir . "/merlin/vim"
-		execute "set rtp+=" . l:dir
-		endfunction
-		let s:opam_configuration['merlin'] = function('OpamConfMerlin')
+function! OpamConfMerlin()
+let l:dir = s:opam_share_dir . "/merlin/vim"
+execute "set rtp+=" . l:dir
+endfunction
+let s:opam_configuration['merlin'] = function('OpamConfMerlin')
 
-			let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
-			let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
-			let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
-			for tool in s:opam_packages
-				if count(s:opam_available_tools, tool) > 0
-					call s:opam_configuration[tool]()
-					endif
-					endfor
-					if count(s:opam_available_tools,"ocp-indent") == 0
-						source "/Users/sammy/.opam/default/share/ocp-indent/vim/indent/ocaml.vim"
-						endif
-						]])
+let s:opam_packages = ["ocp-indent", "ocp-index", "merlin"]
+let s:opam_check_cmdline = ["opam list --installed --short --safe --color=never"] + s:opam_packages
+let s:opam_available_tools = split(system(join(s:opam_check_cmdline)))
+for tool in s:opam_packages
+if count(s:opam_available_tools, tool) > 0
+call s:opam_configuration[tool]()
+endif
+endfor
+if count(s:opam_available_tools,"ocp-indent") == 0
+source "/Users/sammy/.opam/default/share/ocp-indent/vim/indent/ocaml.vim"
+endif
+]])
 
-						vim.cmd([[
-						:tnoremap <A-h> <C-\><C-N><C-w>h
-						:tnoremap <A-j> <C-\><C-N><C-w>j
-						:tnoremap <A-k> <C-\><C-N><C-w>k
-						:tnoremap <A-l> <C-\><C-N><C-w>l
-						:inoremap <A-h> <C-\><C-N><C-w>h
-						:inoremap <A-j> <C-\><C-N><C-w>j
-						:inoremap <A-k> <C-\><C-N><C-w>k
-						:inoremap <A-l> <C-\><C-N><C-w>l
-						:nnoremap <A-h> <C-w>h
-						:nnoremap <A-j> <C-w>j
-						:nnoremap <A-k> <C-w>k
-						:nnoremap <A-l> <C-w>l
-						]])
+vim.cmd([[
+	:tnoremap <A-h> <C-\><C-N><C-w>h
+	:tnoremap <A-j> <C-\><C-N><C-w>j
+	:tnoremap <A-k> <C-\><C-N><C-w>k
+	:tnoremap <A-l> <C-\><C-N><C-w>l
+	:inoremap <A-h> <C-\><C-N><C-w>h
+	:inoremap <A-j> <C-\><C-N><C-w>j
+	:inoremap <A-k> <C-\><C-N><C-w>k
+	:inoremap <A-l> <C-\><C-N><C-w>l
+	:nnoremap <A-h> <C-w>h
+	:nnoremap <A-j> <C-w>j
+	:nnoremap <A-k> <C-w>k
+	:nnoremap <A-l> <C-w>l
+]])
 
-						vim.cmd([[
-						let g:slime_target = "kitty"
-						]])
+vim.cmd([[
+	filetype plugin on
+]])
 
-						vim.cmd([[
-						filetype plugin on
-						]])
-
-						vim.cmd([[
-						set omnifunc=syntaxcomplete#Complete
-						]])
+vim.cmd([[
+	set omnifunc=syntaxcomplete#Complete
+]])
+-- vim:ts=2 sw=2 sts=2

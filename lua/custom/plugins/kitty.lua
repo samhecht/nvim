@@ -1,7 +1,0 @@
-vim.cmd([[ 
-  setlocal commentstring=#\ %s
-  autocmd! BufNewFile,BufRead kitty.conf,*/kitty/*.conf setfiletype kitty
-  autocmd! BufNewFile,BufRead */kitty/*.session setfiletype kitty-session
-  set comments+=b:#,b:#\:
-]])
-return {}

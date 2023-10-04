@@ -14,7 +14,6 @@ return {
     'saadparwaiz1/cmp_luasnip',
     'hrsh7th/cmp-nvim-lsp',
     'rafamadriz/friendly-snippets',
-    'zbirenbaum/copilot-cmp',
   },
   ---@diagnostic disable-next-line missing-fields
   cmp.setup({
@@ -36,7 +35,13 @@ return {
           fallback()
         end
       end),
-
+      ["<S-Tab>"] = vim.schedule_wrap(function(fallback)
+        if cmp.visible() and has_words_before() then
+          cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+        else
+          fallback()
+        end
+      end),
       ['<C-b>'] = cmp.mapping.scroll_docs(-4),
       ['<C-f>'] = cmp.mapping.scroll_docs(4),
       ['<C-Space>'] = cmp.mapping.complete(),
@@ -44,10 +49,9 @@ return {
       ['<CR>'] = cmp.mapping.confirm({ select = true })
     },
     sources = {
-      { name = "copilot",  group_index = 2 },
       { name = "nvim_lsp", group_index = 2 },
-      { name = "path",     group_index = 2 },
       { name = "luasnip",  group_index = 2 },
+      { name = "path",     group_index = 2 },
       { name = "buffer" },
     }
   })

@@ -17,13 +17,13 @@ return {
         },
         layout = {
           position = "bottom", -- | top | left | right
-          suggestion =  "panel", -- | panel
+          suggestion = "panel", -- | panel
           request = "panel", -- | panel
           ratio = 0.4
         },
       },
       suggestion = {
-        enabled = false,
+        enabled = true,
         auto_trigger = false,
         debounce = 75,
         keymap = {
