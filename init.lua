@@ -10,6 +10,7 @@ vim.opt.termguicolors = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.g.number = true
+vim.o.wrap = true
 
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
@@ -25,77 +26,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require('lazy').setup({
-	{
-		'neovim/nvim-lspconfig',
-		dependencies = {
-			{ 'williamboman/mason.nvim', config = true },
-			'williamboman/mason-lspconfig.nvim',
-			{ 'j-hui/fidget.nvim',       tag = 'legacy', opts = {} },
-			'folke/neodev.nvim',
-		},
-	},
-	{ 'folke/which-key.nvim',  opts = {} },
-	{
-		'lewis6991/gitsigns.nvim',
-		opts = {
-			signs = {
-				add = { text = '+' },
-				change = { text = '~' },
-				delete = { text = '_' },
-				topdelete = { text = '‾' },
-				changedelete = { text = '~' },
-			},
-			on_attach = function(bufnr)
-				vim.keymap.set('n', '<leader>gp', require('gitsigns').prev_hunk,
-					{ buffer = bufnr, desc = '[G]o to [P]revious Hunk' })
-				vim.keymap.set('n', '<leader>gn', require('gitsigns').next_hunk,
-					{ buffer = bufnr, desc = '[G]o to [N]ext Hunk' })
-				vim.keymap.set('n', '<leader>ph', require('gitsigns').preview_hunk,
-					{ buffer = bufnr, desc = '[P]review [H]unk' })
-			end,
-		},
-	},
-	{ 'numToStr/Comment.nvim', opts = {} },
-	{
-		'nvim-telescope/telescope.nvim',
-		branch = '0.1.x',
-		dependencies = {
-			'nvim-lua/plenary.nvim',
-			{
-				'nvim-telescope/telescope-fzf-native.nvim',
-				build = 'make',
-				cond = function()
-					return vim.fn.executable 'make' == 1
-				end,
-			},
-		},
-	},
-	{
-		'nvim-treesitter/nvim-treesitter',
-		dependencies = {
-			'nvim-treesitter/nvim-treesitter-textobjects',
-		},
-		build = ':TSUpdate',
-	},
-	{
-		"simrat39/symbols-outline.nvim",
-		cmd = "SymbolsOutline",
-		init = function()
-			vim.keymap.set(
-				"n",
-				"<leader>lo",
-				":SymbolsOutline<cr>",
-				{ desc = "Symbols Outline" }
-			)
-		end,
-		opts = {
-			keymaps = {
-				focus_location = "<tab>",
-			},
-		},
-	},
-
-	{ import = 'custom.plugins' },
+		{ import = 'custom.plugins' },
 }, {
 	git = { url_format = 'git@github.com:%s.git' },
 	-- performance = { reset_packpath = false, }, -- this was for tangerine
@@ -448,13 +379,9 @@ vim.cmd([[
 	:nnoremap <A-j> <C-w>j
 	:nnoremap <A-k> <C-w>k
 	:nnoremap <A-l> <C-w>l
-]])
 
-vim.cmd([[
 	filetype plugin on
-]])
-
-vim.cmd([[
 	set omnifunc=syntaxcomplete#Complete
 ]])
+
 -- vim:ts=2 sw=2 sts=2
